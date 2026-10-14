@@ -3,7 +3,8 @@
 **Stato attuale: schedule GitHub disattivato su richiesta dell'utente il
 14 ottobre 2026. Rimane soltanto `workflow_dispatch`, manuale o da cron
 esterno. `ORDERBOOK_ENABLED=false`; la variabile non serve più al workflow.
-Il servizio cron esterno non è ancora configurato.**
+Il test da cron-job.org è riuscito; la ricorrenza automatica futura non è
+ancora stata verificata.**
 
 14 ottobre 2026. Repository: `harshvir05/Prova`.
 
@@ -45,6 +46,20 @@ Kraken e del caricamento nelle release sul runner GitHub.
   mesi futuri. Controllare salti, errori, eventuale disattivazione per inattività
   e mantenere copie esterne dei dati.
 - Il bot trading e le versioni ufficiali V1/V2/V3 non vengono modificati.
+
+## Test da cron-job.org riuscito
+
+14 ottobre 2026, ore13:01 italiane. L'utente ha avviato il test del job
+"Prova - raccolta dati": GitHub ha risposto200 e creato il run38553637656.
+Il job GitHub è partito alle11:01:22UTC e terminato con successo alle11:01:33UTC.
+Il batch contiene12/12 snapshot Kraken validi ed è stato scaricato dalla
+release per verificarne il checksum. Questo dimostra il percorso cron→GitHub→dati,
+non ancora la continuità di tutte le future esecuzioni automatiche.
+Il cron deve essere salvato e abilitato con frequenza15minuti nel servizio esterno.
+Il token indicato dalla risposta GitHub scade il12gennaio2027 e va rinnovato
+nelle impostazioni del cron prima della scadenza, senza pubblicarlo.
+
+Run: https://github.com/harshvir05/Prova/actions/runs/38553637656
 
 ## Sospensione dello schedule interno richiesta dall'utente
 

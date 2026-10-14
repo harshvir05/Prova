@@ -1,0 +1,15 @@
+{
+  "data_verifica": "2026-10-14",
+  "origine_trigger": "test_cron_job_org_dichiarato_dall_utente",
+  "run_id": 38553637656,
+  "url": "https://github.com/harshvir05/Prova/actions/runs/38553637656",
+  "conclusion": "success",
+  "snapshot_validi": 12,
+  "venue": "kraken",
+  "quote_currency": "USD",
+  "batch_bytes": 57457,
+  "sha256": "34a52eb59a1636a5638d2879bceb50e3bfa7ee8726689773ecd97a29fe17a0ee",
+  "checksum_release_verificato": true,
+  "schedule_interno_github": false,
+  "ricorrenza_esterna_futura_verificata": false
+}

@@ -2,7 +2,8 @@
 
 Lo schedule interno GitHub è stato rimosso il14ottobre2026 su richiesta
 dell'utente. Il workflow conserva soltanto `workflow_dispatch`. Il servizio
-cron esterno non è ancora configurato: queste sono le impostazioni da usare.
+cron esterno è stato testato con successo il14ottobre2026 (run38553637656);
+la ricorrenza futura deve ancora essere verificata. Queste sono le impostazioni.
 
 ## Richiesta HTTP
 
