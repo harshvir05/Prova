@@ -1,0 +1,16 @@
+{
+  "data_verifica": "2026-10-14",
+  "repository": "harshvir05/Prova",
+  "run_id": 38550733899,
+  "url": "https://github.com/harshvir05/Prova/actions/runs/38550733899",
+  "conclusion": "failure",
+  "http_status": 451,
+  "endpoint": "https://fapi.binance.com/fapi/v1/time",
+  "snapshot_validi": 0,
+  "snapshot_attesi": 12,
+  "sha256_batch_diagnostico": "95180479cca23c504b27c716bbdcfb743e71793336715eef9bd79bb8e75e175a",
+  "test_offline_superati": 6,
+  "prova_locale_snapshot_validi": 12,
+  "ORDERBOOK_ENABLED": false,
+  "release_archive_verificato_su_runner": false
+}
