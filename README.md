@@ -13,7 +13,8 @@ Preparato il 14 ottobre 2026. Stato e verifica dell'avvio in `AVVIO.md`.
   `PF_ADAUSD`, `PF_DOGEUSD`, `PF_AVAXUSD`, `PF_LINKUSD`, `PF_LTCUSD`, `PF_DOTUSD`, `PF_TRXUSD`.
 - Un'istantanea per contratto a ogni esecuzione: book REST completo conservato
   nel raw, ordinato e normalizzato ai migliori 100 livelli bid e ask per le metriche.
-- Pianificazione indicativa ogni 15 minuti, ai minuti UTC 7, 22, 37 e 52.
+- Nessuno schedule interno GitHub: disattivato su richiesta dell'utente.
+  Ogni avvio manuale o via API raccoglie un batch e termina.
 - Raw book, metadati contratto, `serverTime`, tempi locali, latenza e stima offset
   dell'orologio; mid, spread e imbalance per controvalore USD nelle bande 5/10/25 bps.
 - Ogni banda indica se la profondità restituita ne copre entrambi gli estremi.
@@ -56,17 +57,17 @@ scaricare copie esterne. Un giorno di 96 esecuzioni produce fino a 192 asset
 
 1. Actions → Collect public order book → Run workflow: esecuzione manuale finita.
 2. Verificare successo, `status.json` con valid=12 e presenza della release.
-3. Settings → Secrets and variables → Actions → Variables: impostare
-   `ORDERBOOK_ENABLED` a `true` soltanto dopo il controllo del primo run.
-4. Per sospendere, impostarla a `false` o disabilitare il workflow.
+3. Per pianificare dall'esterno, seguire [CRON_ESTERNO.md](CRON_ESTERNO.md).
+4. Per sospendere la raccolta esterna, disattivare il servizio cron o il workflow.
 
-La pianificazione rimane spenta finché il primo run non è verificato; lo stato
-effettivo aggiornato è in `AVVIO.md`. Non occorre tenere acceso il PC.
+Lo schedule GitHub è stato rimosso. Il cron esterno non è ancora configurato;
+lo stato aggiornato è in `AVVIO.md`. Non occorre tenere acceso il PC.
 `GITHUB_TOKEN` è fornito da Actions per caricare dati in questo repository;
 non è una credenziale di trading. Nessun secret Binance va configurato.
 
-In un repository pubblico GitHub può disabilitare gli schedule dopo 60 giorni
-senza attività: controllare periodicamente il workflow e la continuità dei dati.
+Un cron esterno invia richieste a orari scelti, ma il job viene comunque
+eseguito su un runner GitHub e può attendere in coda. Verificare gli orari
+effettivi e la continuità dei dati, senza assumere una cadenza garantita.
 Un nuovo account o un nome generico non elimina limiti e visibilità pubblica.
 
 ## Prove locali finite

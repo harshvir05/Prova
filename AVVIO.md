@@ -1,7 +1,9 @@
 # Verifica dell'avvio
 
-**Stato attuale: raccolta Kraken attivata il14ottobre2026, dopo la prova
-manuale completa su GitHub. `ORDERBOOK_ENABLED=true`, workflow active.**
+**Stato attuale: schedule GitHub disattivato su richiesta dell'utente il
+14 ottobre 2026. Rimane soltanto `workflow_dispatch`, manuale o da cron
+esterno. `ORDERBOOK_ENABLED=false`; la variabile non serve più al workflow.
+Il servizio cron esterno non è ancora configurato.**
 
 14 ottobre 2026. Repository: `harshvir05/Prova`.
 
@@ -43,3 +45,10 @@ Kraken e del caricamento nelle release sul runner GitHub.
   mesi futuri. Controllare salti, errori, eventuale disattivazione per inattività
   e mantenere copie esterne dei dati.
 - Il bot trading e le versioni ufficiali V1/V2/V3 non vengono modificati.
+
+## Sospensione dello schedule interno richiesta dall'utente
+
+La variabile è stata prima impostata a false, quindi è stato eliminato
+il trigger schedule dal workflow. Nessuna esecuzione era in corso al controllo.
+I primi batch e la prova riuscita restano conservati. L'avvio manuale resta
+disponibile per il futuro cron esterno; [istruzioni](CRON_ESTERNO.md).
