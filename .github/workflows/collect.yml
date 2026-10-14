@@ -31,7 +31,7 @@ jobs:
       - name: Collect one batch
         id: sample
         continue-on-error: true
-        run: python -B collector.py
+        run: python -B kraken_collector.py
       - name: Archive valid or partial batches in daily releases
         if: always() && steps.sample.outcome != 'skipped'
         env:
@@ -45,7 +45,7 @@ jobs:
           day=$(python -c 'import json; print(json.load(open("output/status.json"))["date_utc"])')
           tag="orderbook-$day"
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --title "Order book $day UTC" --notes "Public Binance USD-M snapshots. Irregular polling, no trading decisions. Schema and limits in README." --latest=false
+            gh release create "$tag" --target "$GITHUB_SHA" --title "Order book $day UTC" --notes "Public Kraken linear USD perpetual snapshots, schema2. Irregular polling, no trading decisions. Schema and limits in README." --latest=false
           fi
           file=$(python -c 'import json; print(json.load(open("output/status.json"))["file"])')
           python -c 'import json; from pathlib import Path; s=json.load(open("output/status.json")); Path("output/"+s["file"]+".sha256").write_text(s["sha256"]+"  "+s["file"]+"\n")'

@@ -18,3 +18,12 @@
   restano nel README. La gratuità dei runner non elimina il blocco API.
 
 Questa configurazione non riavvia il paper V3 sospeso sul PC.
+
+## Cambio sorgente richiesto dall'utente
+
+14 ottobre 2026: aggiunto adattatore esplicito Kraken Futures, schema2,
+contratti linear perpetual USD per tutti i12 asset. Gli11 test offline
+passano; la prova locale finita ha raccolto12/12 snapshot validi (59190byte).
+Binance rimane una prova storica fallita, non una sorgente mescolata a Kraken.
+La pianificazione resta spenta fino alla verifica manuale dell'adattatore
+Kraken e del caricamento nelle release sul runner GitHub.

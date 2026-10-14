@@ -38,7 +38,7 @@ def fetch(endpoint, params=None):
             raise
 
 
-def metrics(payload):
+def book_metrics(payload, quote_currency='USDT'):
     def levels(side, descending):
         rows = payload[side]
         if not rows or len(rows) > 100: raise ValueError('Invalid depth length')
@@ -59,15 +59,21 @@ def metrics(payload):
         bid = sum(p*q for p, q in bids if p >= lower)
         ask = sum(p*q for p, q in asks if p <= upper)
         complete = bids[-1][0] <= lower and asks[-1][0] >= upper
-        bands[str(bps)] = {'bid_notional_usdt_observed': float(bid), 'ask_notional_usdt_observed': float(ask),
+        quote = quote_currency.lower()
+        bands[str(bps)] = {f'bid_notional_{quote}_observed': float(bid), f'ask_notional_{quote}_observed': float(ask),
                            'imbalance_observed': float((bid-ask)/(bid+ask)) if bid+ask else None,
                            'band_complete': complete}
+    return {'mid_price': float(mid), 'spread_bps': float((asks[0][0]-bids[0][0])/mid*10000),
+            'notional_currency': quote_currency, 'bands_bps': bands}
+
+
+def metrics(payload):
+    result = book_metrics(payload)
     for key in ('E', 'T', 'lastUpdateId'):
         if not isinstance(payload[key], int) or isinstance(payload[key], bool) or payload[key] <= 0:
             raise ValueError('Invalid exchange timestamps or update ID')
     if payload['T'] > payload['E']: raise ValueError('Transaction after output time')
-    return {'mid_price': float(mid), 'spread_bps': float((asks[0][0]-bids[0][0])/mid*10000),
-            'bands_bps': bands}
+    return result
 
 
 def collect():
@@ -108,14 +114,14 @@ def collect():
     return records, clock_info
 
 
-def save_batch(folder, records, clock):
+def save_batch(folder, records, clock, schema_version=1):
     folder.mkdir(parents=True, exist_ok=True)
     current = datetime.now(timezone.utc)
     run = os.environ.get('GITHUB_RUN_ID', 'local')
     attempt = os.environ.get('GITHUB_RUN_ATTEMPT', '1')
     stamp = current.strftime('%Y%m%dT%H%M%S%fZ')
     name = f'book-{stamp}-{run}-{attempt}.json.gz'
-    payload = {'schema_version': 1, 'saved_utc': current.isoformat(), 'run_id': run, 'attempt': attempt,
+    payload = {'schema_version': schema_version, 'saved_utc': current.isoformat(), 'run_id': run, 'attempt': attempt,
                'source_commit': os.environ.get('GITHUB_SHA'), 'clock': clock,
                'snapshot_sampling': True, 'records': records}
     path = folder/name
