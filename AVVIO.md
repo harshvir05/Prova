@@ -1,5 +1,8 @@
 # Verifica dell'avvio
 
+**Stato attuale: raccolta Kraken attivata il14ottobre2026, dopo la prova
+manuale completa su GitHub. `ORDERBOOK_ENABLED=true`, workflow active.**
+
 14 ottobre 2026. Repository: `harshvir05/Prova`.
 
 - Accesso GitHub verificato come proprietario del repository.
@@ -27,3 +30,16 @@ passano; la prova locale finita ha raccolto12/12 snapshot validi (59190byte).
 Binance rimane una prova storica fallita, non una sorgente mescolata a Kraken.
 La pianificazione resta spenta fino alla verifica manuale dell'adattatore
 Kraken e del caricamento nelle release sul runner GitHub.
+
+## Prova Kraken riuscita e attivazione
+
+- Run: https://github.com/harshvir05/Prova/actions/runs/38551598812
+- Esito: success,11 test superati,12 snapshot validi su12.
+- Primi dati: https://github.com/harshvir05/Prova/releases/tag/orderbook-2026-10-14
+- Batch gzip58187byte, checksum verificato dopo averlo scaricato dalla release.
+- Verificati schema2, venuekraken e quoteUSD su tutti i12 record.
+- Pianificazione abilitata: minuti UTC7,22,37,52, con possibili ritardi GitHub.
+- Il primo batch è manuale: l'attivazione non dimostra ancora continuità nei
+  mesi futuri. Controllare salti, errori, eventuale disattivazione per inattività
+  e mantenere copie esterne dei dati.
+- Il bot trading e le versioni ufficiali V1/V2/V3 non vengono modificati.
