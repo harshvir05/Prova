@@ -1,0 +1,63 @@
+name: Collect public order book
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-book-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: github.event_name == 'workflow_dispatch' || vars.ORDERBOOK_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Test collector offline
+        run: python -B -m unittest -v
+      - name: Collect one batch
+        id: sample
+        continue-on-error: true
+        run: python -B collector.py
+      - name: Archive valid or partial batches in daily releases
+        if: always() && steps.sample.outcome != 'skipped'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          if [ ! -f output/status.json ]; then exit 1; fi
+          valid=$(python -c 'import json; print(json.load(open("output/status.json"))["valid"])')
+          if [ "$valid" -eq 0 ]; then echo "No valid snapshots; diagnostics retained as artifact."; exit 0; fi
+          day=$(python -c 'import json; print(json.load(open("output/status.json"))["date_utc"])')
+          tag="orderbook-$day"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --title "Order book $day UTC" --notes "Public Binance USD-M snapshots. Irregular polling, no trading decisions. Schema and limits in README." --latest=false
+          fi
+          file=$(python -c 'import json; print(json.load(open("output/status.json"))["file"])')
+          python -c 'import json; from pathlib import Path; s=json.load(open("output/status.json")); Path("output/"+s["file"]+".sha256").write_text(s["sha256"]+"  "+s["file"]+"\n")'
+          gh release upload "$tag" "output/$file" "output/$file.sha256"
+      - name: Retain diagnostics and a second copy
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: book-${{ github.run_id }}-${{ github.run_attempt }}
+          path: output/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Fail on incomplete sampling
+        if: always() && steps.sample.outcome != 'success'
+        run: exit 1
