@@ -1,9 +1,45 @@
 import unittest
-from kraken_collector import MAPPING, normalize, timestamp, validate_instrument
+import io
+import urllib.error
+from unittest.mock import patch
+from kraken_collector import MAPPING, normalize, timestamp, validate_instrument, fetch
 from collector import book_metrics
 
 
 class TestKrakenCollector(unittest.TestCase):
+    def http_error(self, code=503, headers=None):
+        error = urllib.error.HTTPError('https://futures.kraken.com', code, 'test error', headers or {}, None)
+        self.addCleanup(error.close)
+        return error
+
+    def test_metadata_recovers_after_two_transient_errors(self):
+        with patch('kraken_collector.urllib.request.urlopen', side_effect=[self.http_error(), self.http_error(), io.BytesIO(b'{"result":"success"}')]) as request, patch('kraken_collector.time.sleep') as sleep:
+            payload, _, _ = fetch('/instruments')
+        self.assertEqual(payload['result'], 'success')
+        self.assertEqual(request.call_count, 3)
+        self.assertEqual([c.args[0] for c in sleep.call_args_list], [2, 5])
+
+    def test_metadata_failure_is_bounded_and_does_not_invent_data(self):
+        with patch('kraken_collector.urllib.request.urlopen', side_effect=self.http_error()) as request, patch('kraken_collector.time.sleep') as sleep:
+            with self.assertRaises(urllib.error.HTTPError): fetch('/instruments')
+        self.assertEqual(request.call_count, 4)
+        self.assertEqual([c.args[0] for c in sleep.call_args_list], [2, 5, 10])
+
+    def test_permanent_errors_and_long_retry_after_are_not_retried(self):
+        for error in (self.http_error(403), self.http_error(451), self.http_error(429, {'Retry-After': '60'})):
+            with patch('kraken_collector.urllib.request.urlopen', side_effect=error) as request, patch('kraken_collector.time.sleep') as sleep:
+                with self.assertRaises(urllib.error.HTTPError): fetch('/instruments')
+            self.assertEqual(request.call_count, 1)
+            sleep.assert_not_called()
+
+    def test_book_network_retry_is_limited_and_metadata_obeys_retry_after(self):
+        with patch('kraken_collector.urllib.request.urlopen', side_effect=TimeoutError()) as request, patch('kraken_collector.time.sleep'):
+            with self.assertRaises(TimeoutError): fetch('/orderbook', {'symbol': 'PF_XBTUSD'})
+        self.assertEqual(request.call_count, 2)
+        with patch('kraken_collector.urllib.request.urlopen', side_effect=[self.http_error(503, {'Retry-After': '7'}), io.BytesIO(b'{"result":"success"}')]), patch('kraken_collector.time.sleep') as sleep:
+            fetch('/instruments')
+        sleep.assert_called_once_with(7)
+
     def instrument(self):
         return {'symbol': 'PF_XBTUSD', 'type': 'flexible_futures', 'quote': 'USD',
                 'base': 'BTC', 'contractSize': 1, 'tickSize': 1, 'tradeable': True}

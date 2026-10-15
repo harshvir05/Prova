@@ -38,6 +38,14 @@ Prima di usarli come conferma cross-exchange servirà una verifica specifica.
 Si accettano soltanto contratti flexible_futures con quote USD, contractSize1,
 base corretta, tradeable e non suspended; se cambiano, si registra un errore.
 
+Recupero da disservizi temporanei: la richiesta metadata prova fino a quattro
+volte, con attese progressive2/5/10secondi; ogni book fino a due volte.
+Sono ritentati HTTP429/500/502/503/504 e gli errori di rete/timeout.
+HTTP403/451 e dati incoerenti non sono aggirati. Un Retry-After numerico fino
+a10secondi viene rispettato; richieste di attese più lunghe sono lasciate al
+batch successivo. Se il servizio resta indisponibile, il run fallisce e conserva
+i diagnostici: la fascia mancante non viene ricostruita con dati successivi.
+
 ## Conservazione
 
 Ogni batch è un JSON gzip immutabile con versione dello schema (**2 per Kraken,

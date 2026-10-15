@@ -17,7 +17,10 @@ MAPPING = {s: 'PF_'+('XBT' if s == 'BTCUSDT' else s[:-4])+'USD' for s in SYMBOLS
 def fetch(endpoint, params=None):
     if endpoint not in ('/instruments', '/orderbook'): raise ValueError('Public endpoints only')
     url = BASE+endpoint+'?'+urllib.parse.urlencode(params or {})
-    for attempt in range(2):
+    # Metadata failure affects all12 markets: allow a longer, bounded recovery.
+    # Book requests keep two attempts to bound work per run.
+    attempts = 4 if endpoint == '/instruments' else 2
+    for attempt in range(attempts):
         sent = now_ms()
         try:
             request = urllib.request.Request(url, headers={'User-Agent': 'Prova-market-research/2'})
@@ -25,9 +28,31 @@ def fetch(endpoint, params=None):
                 payload = json.load(response)
             return payload, sent, now_ms()
         except urllib.error.HTTPError as error:
-            if error.code in (429, 500, 502, 503, 504) and attempt == 0:
-                time.sleep(2); continue
-            raise
+            error.close()
+            if error.code not in (429, 500, 502, 503, 504) or attempt == attempts-1:
+                raise
+            wait = (2, 5, 10)[attempt]
+            retry_after = error.headers.get('Retry-After') if error.headers else None
+            if retry_after:
+                # Do not retry earlier than a server's numeric Retry-After.
+                try:
+                    requested = float(retry_after)
+                except ValueError:
+                    # An HTTP-date or unknown value: leave recovery to the next batch.
+                    raise error
+                if not 0 <= requested <= 10: raise error
+                wait = max(wait, requested)
+            print(json.dumps({'event': 'request_retry', 'endpoint': endpoint,
+                              'http_status': error.code, 'failed_attempt': attempt+1,
+                              'wait_seconds': wait}), flush=True)
+            time.sleep(wait)
+        except (urllib.error.URLError, TimeoutError) as error:
+            if attempt == attempts-1: raise
+            wait = (2, 5, 10)[attempt]
+            print(json.dumps({'event': 'request_retry', 'endpoint': endpoint,
+                              'error_type': type(error).__name__, 'failed_attempt': attempt+1,
+                              'wait_seconds': wait}), flush=True)
+            time.sleep(wait)
 
 
 def timestamp(value):
