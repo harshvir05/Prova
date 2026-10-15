@@ -1,0 +1,16 @@
+{
+  "data": "2026-10-15",
+  "run_originale": 38695977817,
+  "run_verifica_modifica": 38697260209,
+  "causa_osservata": "HTTP503 su /instruments",
+  "fonte_manutenzione": "https://status.kraken.com/incidents/pt6xsmtsb2vx",
+  "inizio_annunciato_utc": "2026-10-15T07:00:00Z",
+  "durata_annunciata_minuti_circa": 15,
+  "test_superati": 15,
+  "commit_correzione": "3affe62",
+  "snapshot_validi_durante_manutenzione": 0,
+  "campioni_mancanti_non_ricostruiti": true,
+  "cron_esterno_modificato": false,
+  "schedule_github_riattivato": false,
+  "ripresa_successiva_ancora_da_verificare": true
+}

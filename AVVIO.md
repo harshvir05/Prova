@@ -1,5 +1,24 @@
 # Verifica dell'avvio
 
+## Controllo del 15 ottobre 2026
+
+Il run delle09:01 italiane (38695977817) è fallito per HTTP503 su Kraken
+`/instruments`. Non era una compilazione fallita: i test del codice erano
+passati, ma mancavano i metadata necessari a verificare i12 contratti.
+Kraken ha annunciato [manutenzione derivati](https://status.kraken.com/incidents/pt6xsmtsb2vx)
+dalle07:00UTC (09:00italiane) per circa15minuti, compresa la REST API.
+Le esecuzioni precedenti risultavano riuscite ogni15minuti.
+
+È stata pubblicata una gestione più robusta dei disservizi transitori:
+quattro tentativi metadata con attese2/5/10secondi, due tentativi per book,
+retry anche sui timeout, rispetto di Retry-After breve e diagnostica dei tentativi.
+Quindici test passano, inclusi recupero da503, esaurimento dei tentativi,
+timeout, nessun retry dei blocchi permanenti e rispetto di Retry-After.
+Una prova GitHub aggiornata (38697260209) ha ancora ricevuto503 durante la
+manutenzione; ha correttamente segnalato0/12 campioni, senza inventare dati.
+La modifica gestisce interruzioni brevi ma non rende disponibile un exchange
+in manutenzione. Cron esterno e schedule interno disattivato sono invariati.
+
 **Stato attuale: schedule GitHub disattivato su richiesta dell'utente il
 14 ottobre 2026. Rimane soltanto `workflow_dispatch`, manuale o da cron
 esterno. `ORDERBOOK_ENABLED=false`; la variabile non serve più al workflow.
